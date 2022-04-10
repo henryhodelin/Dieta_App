@@ -10,6 +10,10 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import ConnectionPatch
 from matplotlib.backends.backend_pdf import PdfPages
 
+from funciones.dietcal import  dcalculo
+#from funciones.informe import plantilla, article, preheader, header, create_preheader
+from funciones.informe import  create_preheader
+
 import subprocess  # Para ejecutar programas externos
 import datetime    #Trabajo con fechas y horarios
 
@@ -224,58 +228,8 @@ if edad > 0 and altura > 0 and peso > 0 :
             Gasto = kcalVActivo
         agree = st.checkbox('CALCULAR')
         if agree:
-            PProteina=peso*1.2/2 
-            Dieta=round(Gasto + vpeso*300)
-            Desayuno=round(Dieta*0.2)
-            Merienda=round(Dieta*0.05)
-            Almuerzo=round(Dieta*0.35)
-            MeriendaT=round(Dieta*0.1)
-            Comida=round(Dieta*0.3)
-            
-            columna_nombre_proteina = []
-            columna_masa_proteina = []
-            columna_nombre_carbohidrato = []
-            columna_masa_carbohidrato_almuerzo = []
-            columna_masa_carbohidrato_comida = []
-            
-            
-            for p_row in p_dataframe.itertuples(index=False):
-                Nombre_Proteina =  p_row[0] + "  "
-                Contenido_Proteico_Proteina = p_row[1]
-                Valor_Calorico_Proteina =  p_row[2]
-                
-                Masa_Proteina = int((PProteina*100)/Contenido_Proteico_Proteina)
-                KCal_Proteina = int((Valor_Calorico_Proteina*Masa_Proteina)/100) 
-                KCal_Carbohidratos_Almuerzo = int(Almuerzo) - KCal_Proteina
-                KCal_Carbohidratos_Comida = int(Comida) - KCal_Proteina
-                
-                
-                    
-                
-                
-                for c_row in c_dataframe.itertuples(index=False):
-                    Nombre_Carbohidrato =  c_row[0] + "  "
-                    Contenido_Proteico_Carbohidrato = c_row[1]
-                    Valor_Calorico_Carbohidrato =  c_row[2]
-                    
-                    if KCal_Carbohidratos_Almuerzo > 0:
-                        Masa_Carbohidratos_Almuerzo = str(int((KCal_Carbohidratos_Almuerzo*100)/Valor_Calorico_Carbohidrato)) + " g"
-                    else: 
-                        Masa_Carbohidratos_Almuerzo = "Combinación no apropiada"
-                    if KCal_Carbohidratos_Comida > 0:
-                        Masa_Carbohidratos_Comida = str( int((KCal_Carbohidratos_Comida*100)/Valor_Calorico_Carbohidrato)) + " g"
-                    else: 
-                        Masa_Carbohidratos_Comida = "Combinación no apropiada"
-                    
-                    
-                    #st.write(Nombre_Proteina + " " +  str(Masa_Proteina) + " g  " + Nombre_Carbohidrato + Masa_Carbohidratos_Almuerzo + " (Almuerzo) " + Masa_Carbohidratos_Comida + " (Comida) ")
-                    
-                    columna_nombre_proteina.append(Nombre_Proteina)
-                    columna_masa_proteina.append(str(Masa_Proteina))
-                    columna_nombre_carbohidrato.append(Nombre_Carbohidrato)
-                    columna_masa_carbohidrato_almuerzo.append(Masa_Carbohidratos_Almuerzo)
-                    columna_masa_carbohidrato_comida.append(Masa_Carbohidratos_Comida)
-                    
+            columna_nombre_proteina, columna_masa_proteina, columna_nombre_carbohidrato, columna_masa_carbohidrato_almuerzo, columna_masa_carbohidrato_comida = dcalculo(peso,Gasto,vpeso,p_dataframe,c_dataframe)
+        
             
             mydataset = {
                 'Proteína': columna_nombre_proteina,
@@ -319,42 +273,35 @@ if edad > 0 and altura > 0 and peso > 0 :
                     pp.close()
                     
                     #-------------------------------------------
-                    header = """\documentclass{article}
+                    #st.write(preheader+header.format('Hola'))
+                    
+                    #header = """\documentclass{article}
+                    #    
+                    ##    \\begin{document}
+                    # 
+                    ##     """
                         
-                    #    \\begin{document}
                     
-                    #     """
+                    
+                    
+                    
+                    #footer = """
+                    #    
+                    #    First document. This is a simple example, with no 
+                    #    extra parameters or packages included.
+                    #    \end{document}
+                    #    """
                         
-                    
-                    
-                    
-                    
-                    footer = """
-                        
-                        First document. This is a simple example, with no 
-                        extra parameters or packages included.
-                        \end{document}
-                        """
-                        
-                    content = header +   footer
+                    #content = header +   footer
+
                     #content = header + main +  footer
                         
-                    with open(archivo,'w') as f:
-                        f.write(content)
+                    #with open(archivo,'w') as f:
+                    #    f.write(content)
                             
-                            
-                    
                         
-                    os.system("pdflatex {fname}".format(fname = archivo))
+                    #os.system("pdflatex {fname}".format(fname = archivo))
                     
-                    #st.write(main)
-                    
-                    
-                    #with open(archivopdf, "rb") as file:
-                    #    st.download_button(label="Descargar  Informe",
-                    #               data=file,
-                    #               file_name=archivopdf,
-                    #              )
                     
                     
                 
@@ -378,9 +325,23 @@ if edad > 0 and altura > 0 and peso > 0 :
                     
                 #    st.write("Descargado")
                     
-        
-            
-        
+
+
+Test = st.checkbox('TEST')
+
+if Test:
+    #with open('prueba.tex','w') as f:
+    #    f.write(article)
+    #    f.write(plantilla)
+
+    #st.write(plantilla)
+
+    #st.write(preheader)
+    st.write(create_preheader('Analisis de la dieta', 'Henry Hodelin Shombert'))
+
+
+    
+    #os.system("pdflatex {fname}".format(fname = "prueba.tex"))        
     
 
     
